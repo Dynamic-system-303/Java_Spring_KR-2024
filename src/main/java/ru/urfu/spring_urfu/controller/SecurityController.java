@@ -7,10 +7,12 @@ import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import ru.urfu.spring_urfu.dto.UserDto;
 import ru.urfu.spring_urfu.entity.User;
 import ru.urfu.spring_urfu.service.UserService;
 
+import java.util.ArrayList;
 import java.util.List;
 
 @Controller
@@ -38,6 +40,23 @@ public class SecurityController {
         List<UserDto> users = userService.findAllUsers();
         model.addAttribute("users", users);
         return "users";
+    }
+
+    @GetMapping("/editUserRoles")
+    public String editUserRolesForm(@RequestParam Long userId, Model model) {
+        User user = userService.findUserById(userId);  // создаем метод в сервисе
+        UserDto dto = userService.mapToUserDto(user);  // метод преобразования тоже в сервисе
+        // добавляем список всех ролей
+        dto.setAllRoles(userService.getAllRoleNames());
+        model.addAttribute("user", dto);
+        return "edit-user-roles";
+    }
+
+    @PostMapping("/editUserRoles")
+    public String editUserRoles(@RequestParam Long userId,
+                                @RequestParam(required = false) List<String> roles) {
+        userService.updateUserRoles(userId, roles != null ? roles : new ArrayList<>());
+        return "redirect:/users";
     }
 
     @PostMapping("/register/save")

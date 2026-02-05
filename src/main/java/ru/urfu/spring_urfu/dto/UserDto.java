@@ -28,4 +28,6 @@ public class UserDto {
     @NotEmpty(message = "Password should not be empty")
     private String password;
     private List<String> roles = new ArrayList<>();
+
+    private List<String> allRoles = new ArrayList<>();
 }

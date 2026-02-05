@@ -9,4 +9,8 @@ public interface UserService {
     void SaveUser(UserDto user);
     User findUserByEmail(String email);
     List<UserDto> findAllUsers();
+    void updateUserRoles(Long userId, List<String> roles);
+    User findUserById(Long id);
+    UserDto mapToUserDto(User user);
+    List<String> getAllRoleNames();
 }
