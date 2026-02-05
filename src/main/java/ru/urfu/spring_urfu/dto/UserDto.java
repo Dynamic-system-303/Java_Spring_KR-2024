@@ -9,6 +9,9 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
+import java.util.ArrayList;
+import java.util.List;
+
 @Getter
 @Setter
 @NoArgsConstructor
@@ -24,4 +27,5 @@ public class UserDto {
     private String email;
     @NotEmpty(message = "Password should not be empty")
     private String password;
+    private List<String> roles = new ArrayList<>();
 }

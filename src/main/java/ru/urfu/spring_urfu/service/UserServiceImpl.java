@@ -21,7 +21,9 @@ public class UserServiceImpl implements UserService {
     private final PasswordEncoder passwordEncoder;
 
     @Autowired
-    public UserServiceImpl(UserRepository userRepository, RoleRepository roleRepository, PasswordEncoder passwordEncoder) {
+    public UserServiceImpl(UserRepository userRepository,
+                           RoleRepository roleRepository,
+                           PasswordEncoder passwordEncoder) {
         this.userRepository = userRepository;
         this.roleRepository = roleRepository;
         this.passwordEncoder = passwordEncoder;
@@ -29,16 +31,21 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public void SaveUser(UserDto user) {
+        User existingUser = userRepository.findByEmail(user.getEmail());
+        if (existingUser != null) {
+            throw new RuntimeException("Пользователь с таким email уже существует");
+        }
         User new_user = new User();
         new_user.setName(user.getFirstName() + " " + user.getLastName());
         new_user.setEmail(user.getEmail());
         new_user.setPassword(passwordEncoder.encode(user.getPassword()));
 
-        Role role = roleRepository.findByName("ROLE_ADMIN");
+        Role role = roleRepository.findByName("ROLE_READ_ONLY");
+
         if (role == null) {
-            role = checkRoleExist();
+            role = createRoleIfNotExist("ROLE_READ_ONLY");
         }
-        new_user.setRoles(List.of(new Role[]{role}));
+        new_user.setRoles(List.of(role));
         userRepository.save(new_user);
     }
 
@@ -50,12 +57,20 @@ public class UserServiceImpl implements UserService {
     @Override
     public List<UserDto> findAllUsers() {
         List<User> users = userRepository.findAll();
-        return users.stream().map(this::mapToUserDto).collect(Collectors.toList());
+        return users.stream()
+                .map(this::mapToUserDto)
+                .collect(Collectors.toList());
     }
 
-    private Role checkRoleExist() {
+//    private Role checkRoleExist() {
+//        Role role = new Role();
+//        role.setName("ROLE_ADMIN");
+//        return roleRepository.save(role);
+//    }
+
+    private Role createRoleIfNotExist(String roleName) {
         Role role = new Role();
-        role.setName("ROLE_ADMIN");
+        role.setName(roleName);
         return roleRepository.save(role);
     }
 
@@ -63,7 +78,7 @@ public class UserServiceImpl implements UserService {
         UserDto dto = new UserDto();
         String[] name_parts = user.getName().split(" ");
         dto.setFirstName(name_parts[0]);
-        dto.setLastName(name_parts[1]);
+        dto.setLastName(name_parts.length > 1 ? name_parts[1] : "");
         dto.setEmail(user.getEmail());
         return dto;
     }
